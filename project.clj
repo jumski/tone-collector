@@ -10,7 +10,7 @@
                  [slingshot "0.12.2"]
                  [io.aviso/pretty "0.1.37"]
                  [expound "0.8.4"]]
-  :main ^:skip-aot jumski.tone-collector
+  :main ^:skip-aot jumski.tone-collector.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
                        :injections [(javafx.application.Platform/exit)]}})

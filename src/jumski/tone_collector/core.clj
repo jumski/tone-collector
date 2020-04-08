@@ -1,5 +1,5 @@
-(ns jumski.tone-collector
-  (:gen-class))
+(ns jumski.tone-collector.core
+  (:require [cljfx.api :as fx]))
 
 (defn -main
   "I don't do a whole lot ... yet."
