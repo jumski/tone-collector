@@ -1,6 +1,9 @@
 (ns jumski.tone-collector.list-view
   (:require [cljfx.api :as fx]
-            [cljfx.ext.list-view :as fx.ext.list-view]))
+            [cljfx.ext.list-view :as fx.ext.list-view])
+  (:import [javafx.stage DirectoryChooser Stage]
+           [javafx.event ActionEvent]
+           [javafx.scene Node]))
 
 (def only-wav-files
   "Transducer, filtering only paths to wav files, based on extension."
@@ -35,6 +38,11 @@
    :text "Load media!"
    :on-action {:event/type ::load-media}})
 
+(defn choose-directory-button [& args]
+  {:fx/type :button
+   :text "Select source directory"
+   :on-action {:event/type ::select-media-directory}})
+
 (defn root-view [{:keys [state]}]
   {:fx/type :stage
    :showing true
@@ -48,25 +56,66 @@
                   :children [{:fx/type list-view
                               :items (:files state)}
                              {:fx/type load-button}
+                             {:fx/type choose-directory-button}
                              {:fx/type :label
                               :text (if (nil? (:selected-item state))
                                       ""
-                                      (.getPath (:selected-item state)))}]}}})
+                                      (.getPath (:selected-item state)))}
+                             {:fx/type :label
+                              :text (str "Source dir: " (:selected-media-directory state))}]}}})
 
-(defmulti event-handler :event/type)
-(defmethod event-handler ::select-media [{item :fx/event}]
+(defmulti handle :event/type)
+
+(defmethod handle ::select-media [{item :fx/event}]
   (swap! *state assoc :selected-item item))
-(defmethod event-handler ::load-media [& args]
+(defmethod handle ::load-media [& args]
   (let [files (wav-files-in-dir "resources/")]
     (do
         (swap! *state assoc :files files)
         (swap! *state assoc :selected-item (first files)))))
+(defmethod handle ::set-media-directory [file]
+  (swap! *state assoc :selected-media-directory file))
+
+(defmethod handle ::select-media-directory [{:keys [^ActionEvent fx/event]}]
+  (let [window (.getWindow (.getScene ^Node (.getTarget event)))
+        chooser (doto (DirectoryChooser.)
+                  (.setTitle "Select source directory"))]
+    (when-let [dir @(fx/on-fx-thread (.showDialog chooser window))]
+      {:state {:selected-media-directory dir}})))
 
 (def renderer
   (fx/create-renderer
     :middleware (fx/wrap-map-desc (fn [state]
                                     {:fx/type root-view
                                      :state state}))
-    :opts {:fx.opt/map-event-handler event-handler}))
+    :opts {:fx.opt/map-event-handler
+           (-> handle
+               (fx/wrap-co-effects {:state (fx/make-deref-co-effect *state)})
+               (fx/wrap-effects {:state (fx/make-reset-effect *state)
+                                 :dispatch fx/dispatch-effect})
+               (fx/wrap-async))}))
+
+(comment
+
+  (let [handler (fn [event]
+                  (println "in handler" event)
+                  {:other "ziem2" :printme "ziemniak"})
+        wrapped1 (fx/wrap-co-effects handler {:otherpayload (fn [] :omghax)})
+        full (fx/wrap-effects handler {:printme (fn [e d]
+                                                     (println "wrap-effects - e" e)
+                                                     (println "wrap-effects - d" d))})]
+    (full {:event/type :omghax :payload :mypayload})
+    ; (wrapped1 {:event/type :omghax :payload :mypayload})
+    ; (wrapped {:event/type :omghax :payload :mypayload :printme "yolo"})
+    )
+  )
+
+
+; (def renderer
+;   (fx/create-renderer
+;     :middleware (fx/wrap-map-desc (fn [state]
+;                                     {:fx/type root-view
+;                                      :state state}))
+;     :opts {:fx.opt/map-event-handler event-handler}))
 
 (fx/mount-renderer *state renderer)
