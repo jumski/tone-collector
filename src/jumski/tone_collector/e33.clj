@@ -1,24 +1,24 @@
 (ns jumski.tone-collector.e33
   (:require [cljfx.api :as fx])
-  (:import [javafx.stage FileChooser]
+  (:import [javafx.stage DirectoryChooser]
            [javafx.event ActionEvent]
            [javafx.scene Node]))
 
 (def *state
-  (atom {:file nil}))
+  (atom {:dir nil}))
 
 (defmulti handle ::event)
 
-(defmethod handle ::open-file [{:keys [^ActionEvent fx/event]}]
+(defmethod handle ::open-dir [{:keys [^ActionEvent fx/event]}]
   (let [window (.getWindow (.getScene ^Node (.getTarget event)))
-        chooser (doto (FileChooser.)
-                  (.setTitle "Open File"))]
-    (when-let [file @(fx/on-fx-thread (.showOpenDialog chooser window))]
-      {:state {:file file :content (slurp file)}})))
+        chooser (doto (DirectoryChooser.)
+                  (.setTitle "Open dir"))]
+    (when-let [dir @(fx/on-fx-thread (.showDialog chooser window))]
+      {:state {:dir dir}})))
 
-(defn root-view [{:keys [file content]}]
+(defn root-view [{:keys [dir content]}]
   {:fx/type :stage
-   :title "Textual file viewer"
+   :title "Textual dir viewer"
    :showing true
    :width 800
    :height 600
@@ -30,14 +30,14 @@
                               :spacing 15
                               :alignment :center-left
                               :children [{:fx/type :button
-                                          :text "Open file..."
-                                          :on-action {::event ::open-file}}
+                                          :text "Open dir..."
+                                          :on-action {::event ::open-dir}}
                                          {:fx/type :label
-                                          :text (str file)}]}
+                                          :text (str dir)}]}
                              {:fx/type :text-area
                               :v-box/vgrow :always
                               :editable false
-                              :text content}]}}})
+                              :text (str dir)}]}}})
 
 (def renderer
   (fx/create-renderer
