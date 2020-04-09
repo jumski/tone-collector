@@ -1,5 +1,8 @@
 (ns jumski.tone-collector.e33
-  (:require [cljfx.api :as fx])
+  (:require
+    [cljfx.api :as fx]
+    [cljfx.ext.list-view :as fx.ext.list-view]
+    [jumski.tone-collector.file :refer [wav-files-in-dir]])
   (:import [javafx.stage DirectoryChooser]
            [javafx.event ActionEvent]
            [javafx.scene Node]))
@@ -7,11 +10,18 @@
 ;;; state
 
 (def *state
-  (atom {:source-dir nil
-         :destination-dir nil}))
+  (atom {:from-dir nil
+         :to-dir nil
+         :files []
+         :selected-file nil}))
 
-(defn ready-to-roll? [state]
-  false)
+(defn ready-to-roll? [{:keys [from-dir to-dir]}]
+  (not (or (nil? from-dir)
+           (nil? to-dir))))
+
+(defn load-files [dir dispatch!]
+  (let [files (wav-files-in-dir dir)]
+    (dispatch! {::event ::set-files :files files})))
 
 ;;; views
 
@@ -21,47 +31,56 @@
    :spacing 5
    :children (vec children)})
 
-(defn on-init-view [{:keys [source destination]}]
+(defn list-view [& a] {:fx/type :label :text (str @*state)})
+; (defn list-view [{:keys [items selected]}]
+;   {:fx/type fx.ext.list-view/with-selection-props
+;    :props {:selection-mode :single
+;            :selected-item (if (nil? selected-item)
+;                             (first items)
+;                             selected-item)
+;            :on-selected-item-changed {::event ::select-file}}
+;    :desc {:fx/type :list-view
+;           :cell-factory (fn [x] {:text (.getPath x)})
+;           :items items}})
+
+
+(defn on-init-view [{:keys [from-dir to-dir]}]
   (v-layout-view :children [{:fx/type :h-box
                               :spacing 5
                               :alignment :center-left
                               :children [{:fx/type :button
                                           :on-action {::event ::open-dir
-                                                      :dir :source-dir}
-                                          :text "Select Source folder"}
+                                                      :dir :from-dir}
+                                          :text "Select from folder"}
                                          {:fx/type :label
-                                          :text source}]}
+                                          :text from-dir}]}
                             {:fx/type :h-box
                              :spacing 5
                              :alignment :center-left
                              :children [{:fx/type :button
                                         :on-action {::event ::open-dir
-                                                    :dir :destination-dir}
-                                         :text "Select Destination folder"}
+                                                    :dir :to-dir}
+                                         :text "Select to-dir folder"}
                                         {:fx/type :label
-                                         :text destination}]}
+                                         :text to-dir}]}
+                            {:fx/type list-view
+                             :items (if (nil? from-dir) [] (wav-files-in-dir from-dir))
+                             :selected nil}
                             {:fx/type :text-area
                              :v-box/vgrow :always
                              :editable false
                              :text (str @*state)}]))
 
-(defn sample-loaded-view [_]
-  (v-layout-view :children []))
-
-(defn root-view [{:keys [source-dir destination-dir] :as state}]
+(defn root-view [{:keys [from-dir to-dir] :as state}]
   {:fx/type :stage
    :title "Textual dir viewer"
    :showing true
    :width 800
    :height 600
    :scene {:fx/type :scene
-           :root (if (ready-to-roll? state)
-                   {:fx/type sample-loaded-view
-                    :source source-dir
-                    :destination destination-dir}
-                   {:fx/type on-init-view
-                    :source source-dir
-                    :destination destination-dir})}})
+           :root {:fx/type on-init-view
+                  :from-dir from-dir
+                  :to-dir to-dir}}})
 
 ;;; handlers
 

@@ -1,7 +1,7 @@
 (ns jumski.tone-collector.list-view
   (:require [cljfx.api :as fx]
             [cljfx.ext.list-view :as fx.ext.list-view])
-  (:import [javafx.stage DirectoryChooser Stage]
+  (:import [javafx.stage DirectoryChooser]
            [javafx.event ActionEvent]
            [javafx.scene Node]))
 
