@@ -83,6 +83,17 @@
 
 ;;; handlers
 
+(defn set-dir [state dir file]
+  (assoc state dir (.getPath file)))
+
+(defn maybe-load-files [state dir file]
+  (if (= :from-dir dir)
+    (let [files (wav-files-in-dir (.getPath file))]
+      (-> state
+          (assoc :files files)
+          (assoc :selected-file (first files))))
+    state))
+
 (defmulti handle ::event)
 
 (defmethod handle ::open-dir [{:keys [^ActionEvent fx/event dir state]}]
@@ -90,9 +101,9 @@
         chooser (doto (DirectoryChooser.)
                   (.setTitle "Open dir"))]
     (when-let [file @(fx/on-fx-thread (.showDialog chooser window))]
-      {:state (cond-> state
-                  true (assoc dir (.getPath file))
-                  (= dir :from-dir) (assoc :files (wav-files-in-dir (.getPath file))))})))
+      {:state (-> state
+                  (set-dir dir file)
+                  (maybe-load-files dir file))})))
 
 (def renderer
   (fx/create-renderer
