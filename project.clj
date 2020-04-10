@@ -7,9 +7,10 @@
   :middleware [io.aviso.lein-pretty/inject]
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [cljfx "1.6.7"]
-                 [slingshot "0.12.2"]
-                 [io.aviso/pretty "0.1.37"]
-                 [expound "0.8.4"]]
+                 [overtone/midi-clj "0.5.0"]
+                 #_[slingshot "0.12.2"]
+                 #_[io.aviso/pretty "0.1.37"]
+                 #_[expound "0.8.4"]]
   :main ^:skip-aot jumski.tone-collector.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
