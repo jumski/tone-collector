@@ -19,10 +19,6 @@
   (not (or (nil? from-dir)
            (nil? to-dir))))
 
-(defn load-files [dir dispatch!]
-  (let [files (wav-files-in-dir dir)]
-    (dispatch! {::event ::set-files :files files})))
-
 ;;; views
 
 (defn v-layout-view [& {:keys [children]}]
@@ -68,6 +64,7 @@
                              :selected nil}
                             {:fx/type :text-area
                              :v-box/vgrow :always
+                             :wrap-text true
                              :editable false
                              :text (str @*state)}]))
 
@@ -75,7 +72,9 @@
   {:fx/type :stage
    :title "Textual dir viewer"
    :showing true
-   :width 800
+   :x 20
+   :y 20
+   :width 500
    :height 600
    :scene {:fx/type :scene
            :root {:fx/type on-init-view
@@ -91,7 +90,9 @@
         chooser (doto (DirectoryChooser.)
                   (.setTitle "Open dir"))]
     (when-let [file @(fx/on-fx-thread (.showDialog chooser window))]
-      {:state (assoc state dir (.getPath file))})))
+      {:state (cond-> state
+                  true (assoc dir (.getPath file))
+                  (= dir :from-dir) (assoc :files (wav-files-in-dir (.getPath file))))})))
 
 (def renderer
   (fx/create-renderer
