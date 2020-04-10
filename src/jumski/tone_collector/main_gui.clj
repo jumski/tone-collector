@@ -1,4 +1,4 @@
-(ns jumski.tone-collector.e33
+(ns jumski.tone-collector.main-gui
   (:require
     [cljfx.api :as fx]
     [cljfx.ext.list-view :as fx.ext.list-view]
