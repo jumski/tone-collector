@@ -27,9 +27,10 @@
    :spacing 5
    :children (vec children)})
 
-(defn list-view [{:keys [items]}]
+(defn list-view [{:keys [items selected-item]}]
   {:fx/type fx.ext.list-view/with-selection-props
    :props {:selection-mode :single
+           :selected-item selected-item
            :on-selected-item-changed {::event ::select-file}}
    :desc {:fx/type :list-view
           :cell-factory (fn [file] {:text (.getPath file)})
@@ -56,7 +57,8 @@
                                         {:fx/type :label
                                          :text (:to-dir state)}]}
                             {:fx/type list-view
-                             :items (:files state)}
+                             :items (:files state)
+                             :selected-item (:current-file state)}
                             {:fx/type :text-area
                              :v-box/vgrow :always
                              :wrap-text true
@@ -85,7 +87,7 @@
     (let [files (wav-files-in-dir (.getPath file))]
       (-> state
           (assoc :files files)
-          (assoc :selected-file (first files))))
+          (assoc :current-file (first files))))
     state))
 
 (defmulti handle ::event)
