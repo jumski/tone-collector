@@ -6,7 +6,8 @@
     [jumski.tone-collector.player :refer [play-file]])
   (:import [javafx.stage DirectoryChooser]
            [javafx.event ActionEvent]
-           [javafx.scene Node]))
+           [javafx.scene Node]
+           [javafx.scene.input KeyCode KeyEvent]))
 
 ;;; state
 
@@ -74,6 +75,7 @@
    :width 500
    :height 600
    :scene {:fx/type :scene
+           :on-key-pressed {::event ::key-pressed}
            :root {:fx/type on-init-view
                   :state state}}})
 
@@ -91,6 +93,11 @@
     state))
 
 (defmulti handle ::event)
+
+(defmethod handle ::key-pressed [{event :fx/event}]
+  (let [kcode (.getCode ^KeyEvent event)]
+    (case
+      KeyCode/ENTER (play-file (:current-file @*state)))))
 
 (defmethod handle ::select-file [{file :fx/event state :state}]
   (play-file file))
