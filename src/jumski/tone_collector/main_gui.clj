@@ -59,6 +59,7 @@
                                          :text (:to-dir state)}]}
                             {:fx/type list-view
                              :items (:files state)
+                             :on-key-pressed {::event ::key-pressed}
                              :selected-item (:current-file state)}
                             {:fx/type :text-area
                              :v-box/vgrow :always
@@ -94,11 +95,24 @@
 
 (defmulti handle ::event)
 
-(defmethod handle ::key-pressed [{event :fx/event :as x}]
-  {:state (:state x)}
-  #_(let [kcode (.getCode ^KeyEvent event)]
-    (case
-      KeyCode/ENTER (play-file (:current-file @*state)))))
+(def play-keycodes
+  #{KeyCode/ENTER
+    KeyCode/SPACE
+    KeyCode/P})
+
+(def copy-keycodes
+  #{KeyCode/C
+    KeyCode/Y})
+
+(def skip-keycodes
+  #{KeyCode/N})
+
+(defmethod handle ::key-pressed [{event :fx/event state :state}]
+  (let [kcode (.getCode ^KeyEvent event)]
+    (println "kcode" kcode)
+    (if (play-keycodes kcode)
+      {:play-file (:current-file state)}
+      {})))
 
 (defmethod handle ::select-file [{file :fx/event state :state}]
   {:state (assoc state :current-file file)
