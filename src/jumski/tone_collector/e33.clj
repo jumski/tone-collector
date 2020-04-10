@@ -2,7 +2,8 @@
   (:require
     [cljfx.api :as fx]
     [cljfx.ext.list-view :as fx.ext.list-view]
-    [jumski.tone-collector.file :refer [wav-files-in-dir]])
+    [jumski.tone-collector.file :refer [wav-files-in-dir]]
+    [jumski.tone-collector.player :refer [play-file]])
   (:import [javafx.stage DirectoryChooser]
            [javafx.event ActionEvent]
            [javafx.scene Node]))
@@ -12,8 +13,7 @@
 (def *state
   (atom {:from-dir nil
          :to-dir nil
-         :files []
-         :selected-file nil}))
+         :files []}))
 
 (defn ready-to-roll? [{:keys [from-dir to-dir]}]
   (not (or (nil? from-dir)
@@ -27,20 +27,16 @@
    :spacing 5
    :children (vec children)})
 
-(defn list-view [& a] {:fx/type :label :text (str @*state)})
-; (defn list-view [{:keys [items selected]}]
-;   {:fx/type fx.ext.list-view/with-selection-props
-;    :props {:selection-mode :single
-;            :selected-item (if (nil? selected-item)
-;                             (first items)
-;                             selected-item)
-;            :on-selected-item-changed {::event ::select-file}}
-;    :desc {:fx/type :list-view
-;           :cell-factory (fn [x] {:text (.getPath x)})
-;           :items items}})
+(defn list-view [{:keys [items]}]
+  {:fx/type fx.ext.list-view/with-selection-props
+   :props {:selection-mode :single
+           :on-selected-item-changed {::event ::select-file}}
+   :desc {:fx/type :list-view
+          :cell-factory (fn [file] {:text (.getPath file)})
+          :items items}})
 
 
-(defn on-init-view [{:keys [from-dir to-dir]}]
+(defn on-init-view [{:keys [state] :as x}]
   (v-layout-view :children [{:fx/type :h-box
                               :spacing 5
                               :alignment :center-left
@@ -49,7 +45,7 @@
                                                       :dir :from-dir}
                                           :text "Select from folder"}
                                          {:fx/type :label
-                                          :text from-dir}]}
+                                          :text (:from-dir state)}]}
                             {:fx/type :h-box
                              :spacing 5
                              :alignment :center-left
@@ -58,17 +54,16 @@
                                                     :dir :to-dir}
                                          :text "Select to-dir folder"}
                                         {:fx/type :label
-                                         :text to-dir}]}
+                                         :text (:to-dir state)}]}
                             {:fx/type list-view
-                             :items (if (nil? from-dir) [] (wav-files-in-dir from-dir))
-                             :selected nil}
+                             :items (:files state)}
                             {:fx/type :text-area
                              :v-box/vgrow :always
                              :wrap-text true
                              :editable false
-                             :text (str @*state)}]))
+                             :text (str state)}]))
 
-(defn root-view [{:keys [from-dir to-dir] :as state}]
+(defn root-view [state]
   {:fx/type :stage
    :title "Textual dir viewer"
    :showing true
@@ -78,8 +73,7 @@
    :height 600
    :scene {:fx/type :scene
            :root {:fx/type on-init-view
-                  :from-dir from-dir
-                  :to-dir to-dir}}})
+                  :state state}}})
 
 ;;; handlers
 
@@ -95,6 +89,9 @@
     state))
 
 (defmulti handle ::event)
+
+(defmethod handle ::select-file [{file :fx/event state :state}]
+  (play-file file))
 
 (defmethod handle ::open-dir [{:keys [^ActionEvent fx/event dir state]}]
   (let [window (.getWindow (.getScene ^Node (.getTarget event)))

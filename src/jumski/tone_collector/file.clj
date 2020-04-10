@@ -12,4 +12,3 @@
   (->> (clojure.java.io/file dir)
        file-seq
        (sequence only-wav-files)))
-
