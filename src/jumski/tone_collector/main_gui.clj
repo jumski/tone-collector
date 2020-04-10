@@ -94,13 +94,15 @@
 
 (defmulti handle ::event)
 
-(defmethod handle ::key-pressed [{event :fx/event}]
-  (let [kcode (.getCode ^KeyEvent event)]
+(defmethod handle ::key-pressed [{event :fx/event :as x}]
+  {:state (:state x)}
+  #_(let [kcode (.getCode ^KeyEvent event)]
     (case
       KeyCode/ENTER (play-file (:current-file @*state)))))
 
 (defmethod handle ::select-file [{file :fx/event state :state}]
-  (play-file file))
+  {:state (assoc state :current-file file)
+   :play-file file})
 
 (defmethod handle ::open-dir [{:keys [^ActionEvent fx/event dir state]}]
   (let [window (.getWindow (.getScene ^Node (.getTarget event)))
@@ -118,6 +120,7 @@
            (-> handle
                (fx/wrap-co-effects {:state (fx/make-deref-co-effect *state)})
                (fx/wrap-effects {:state (fx/make-reset-effect *state)
+                                 :play-file (fn [file _] (play-file file))
                                  :dispatch fx/dispatch-effect})
                (fx/wrap-async))}))
 
