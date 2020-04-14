@@ -83,10 +83,9 @@
                                           {:fx/type current-file-button
                                            :state state
                                            :on-action {::event ::copy-file}
-                                           :text "🕮 MOVE"}]}
+                                           :text "🕮 COPY"}]}
                               {:fx/type list-view
                                :items files
-                               :on-key-pressed {::event ::key-pressed}
                                :selected-item current-file}
                               {:fx/type :text-area
                                :v-box/vgrow :always
@@ -103,7 +102,6 @@
    :width 500
    :height 600
    :scene {:fx/type :scene
-           ; :on-key-pressed {::event ::key-pressed}
            :root {:fx/type on-init-view
                   :state state}}})
 
@@ -121,25 +119,6 @@
     state))
 
 (defmulti handle ::event)
-
-(def play-keycodes
-  #{KeyCode/ENTER
-    KeyCode/SPACE
-    KeyCode/P})
-
-(def copy-keycodes
-  #{KeyCode/C
-    KeyCode/Y})
-
-(def skip-keycodes
-  #{KeyCode/N})
-
-(defmethod handle ::key-pressed [{event :fx/event state :state}]
-  (let [kcode (.getCode ^KeyEvent event)]
-    (println "kcode" kcode)
-    (if (play-keycodes kcode)
-      {:play state}
-      {})))
 
 (defmethod handle ::play-file [{:keys [state]}]
   {:play (first (:files state))})
