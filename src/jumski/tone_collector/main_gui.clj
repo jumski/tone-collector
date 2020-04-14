@@ -25,13 +25,23 @@
    :spacing 5
    :children (vec children)})
 
+(defn file-cell-factory [selected-file file]
+  {:text (.getName file)
+   :style {:-fx-background :-fx-control-inner-background
+           :-fx-background-color (if (= selected-file file)
+                                   [:-fx-table-cell-border-color :-fx-background]
+                                   :white)
+           :-fx-text-fill (if (= selected-file file) :black :grey)
+           :-fx-background-insets [0 [0 0 1 0]]
+           :-fx-table-cell-border-color "derive(-fx-color, 5%)"}})
+
 (defn list-view [{:keys [items selected-item]}]
   {:fx/type fx.ext.list-view/with-selection-props
    :props {:selection-mode :single
            :selected-item selected-item
            :on-selected-item-changed {::event ::no-op}}
    :desc {:fx/type :list-view
-          :cell-factory (fn [file] {:text (.getName file)})
+          :cell-factory (partial file-cell-factory selected-item)
           :items items}})
 
 (defn current-file-button [{:keys [state on-action text]}]
@@ -72,7 +82,9 @@
                               {:fx/type :h-box
                                :spacing 5
                                :alignment :center-left
-                               :children [{:fx/type :button
+                               :children [{:fx/type :label
+                                           :text (str "Current file: " (.getName current-file))}
+                                          {:fx/type :button
                                            :on-action (if (seq files) {::event ::play-file} {})
                                            :style {:-fx-text-fill (if (seq files) :black :grey)}
                                            :text "▶ PLAY"}
