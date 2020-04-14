@@ -3,7 +3,8 @@
     [cljfx.api :as fx]
     [cljfx.ext.list-view :as fx.ext.list-view]
     [jumski.tone-collector.file :refer [wav-files-in-dir]]
-    [jumski.tone-collector.player :refer [play-file]])
+    [jumski.tone-collector.player :refer [play-file]]
+    [clojure.java.io :as io])
   (:import [javafx.stage DirectoryChooser]
            [javafx.event ActionEvent]
            [javafx.scene Node]
@@ -15,10 +16,6 @@
   (atom {:from-dir nil
          :to-dir nil
          :files []}))
-
-(defn ready-to-roll? [{:keys [from-dir to-dir]}]
-  (not (or (nil? from-dir)
-           (nil? to-dir))))
 
 ;;; views
 
@@ -85,7 +82,7 @@
                                            :text "⏩SKIP"}
                                           {:fx/type current-file-button
                                            :state state
-                                           :on-action {::event ::move-file}
+                                           :on-action {::event ::copy-file}
                                            :text "🕮 MOVE"}]}
                               {:fx/type list-view
                                :items files
@@ -153,11 +150,11 @@
     {:state new-state
      :play file-to-play}))
 
-(defmethod handle ::move-file [{:keys [state]}]
+(defmethod handle ::copy-file [{:keys [state]}]
   (if (seq (:files state))
     (let [[file-to-move file-to-play] (:files state)]
       {:state (update state :files rest)
-       :move {:file file-to-move :to-dir (:to-dir state)}
+       :copy {:file file-to-move :to-dir (:to-dir state)}
        :play file-to-play})
     {}))
 
@@ -174,6 +171,14 @@
                   (assoc dir-key (.getPath file))
                   (maybe-load-files dir-key file))})))
 
+(defn play-effect [file _]
+  (if file
+    (play-file file)))
+
+(defn copy-effect [{:keys [^java.io.File file to-dir]} _]
+  (let [to-file (io/file to-dir (.getName file))]
+    (io/copy file to-file)))
+
 (def renderer
   (fx/create-renderer
     :middleware (fx/wrap-map-desc #(root-view %))
@@ -181,9 +186,8 @@
            (-> handle
                (fx/wrap-co-effects {:state (fx/make-deref-co-effect *state)})
                (fx/wrap-effects {:state (fx/make-reset-effect *state)
-                                 :play (fn [f _] (if f (play-file f)))
-                                 :move (fn [{:keys [file to-dir]} _]
-                                         (println "MOVE:" {:file file :to-dir to-dir}))
+                                 :play play-effect
+                                 :copy copy-effect
                                  :dispatch fx/dispatch-effect})
                (fx/wrap-async))}))
 
