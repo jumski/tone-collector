@@ -67,6 +67,7 @@
                                :children [{:fx/type :button
                                            :on-action {::event ::open-dir
                                                        :dir-key :from-dir}
+                                           :style {:-fx-text-fill (if from-dir :grey :red)}
                                            :text "Change source folder"}
                                           {:fx/type :label
                                            :text from-dir} ]}
@@ -76,6 +77,7 @@
                                :children [{:fx/type :button
                                            :on-action {::event ::open-dir
                                                        :dir-key :to-dir}
+                                          :style {:-fx-text-fill (if (and from-dir to-dir) :grey :red)}
                                            :text "Change destination folder"}
                                           {:fx/type :label
                                            :text to-dir}]}
