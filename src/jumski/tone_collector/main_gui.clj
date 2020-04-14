@@ -47,7 +47,7 @@
                                                       :dir-key :from-dir}
                                           :text "Select from folder"}
                                          {:fx/type :label
-                                          :text (:from-dir state)}]}
+                                          :text (:from-dir state)} ]}
                             {:fx/type :h-box
                              :spacing 5
                              :alignment :center-left
@@ -57,6 +57,15 @@
                                          :text "Select to-dir folder"}
                                         {:fx/type :label
                                          :text (:to-dir state)}]}
+                            {:fx/type :h-box
+                             :spacing 5
+                             :alignment :center-left
+                             :children [{:fx/type :button
+                                         :on-action {::event ::skip-file}
+                                         :text ">> SKIP"}
+                                        {:fx/type :button
+                                         :on-action {::event ::move-file}
+                                         :text "!!! MOVE !!!"}]}
                             {:fx/type list-view
                              :items (:files state)
                              :on-key-pressed {::event ::key-pressed}
@@ -127,6 +136,9 @@
                   (assoc dir-key (.getPath file))
                   (maybe-load-files dir-key file))})))
 
+; (defmethod handle ::move-file [{:keys [state]}]
+;   (if-let [next-file
+
 (def renderer
   (fx/create-renderer
     :middleware (fx/wrap-map-desc #(root-view %))
@@ -142,7 +154,7 @@
 
 (comment
   (renderer)
-  (reset! *state (maybe-load-files @*state :from-dir (clojure.java.io/file"resources/")))
+  (reset! *state (maybe-load-files @*state :from-dir (clojure.java.io/file"resources/"))
   (defn sf [f]
     (handle {::event ::select-file :fx/event f :state @*state}))
 
