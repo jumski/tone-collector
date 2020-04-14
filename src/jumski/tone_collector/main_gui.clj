@@ -139,3 +139,16 @@
                (fx/wrap-async))}))
 
 (fx/mount-renderer *state renderer)
+
+(comment
+  (renderer)
+  (reset! *state (maybe-load-files @*state :from-dir (clojure.java.io/file"resources/")))
+  (defn sf [f]
+    (handle {::event ::select-file :fx/event f :state @*state}))
+
+  (defn random-file []
+    (->> @*state
+         :files
+         rand-nth
+         sf))
+  )
