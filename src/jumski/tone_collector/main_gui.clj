@@ -115,9 +115,6 @@
 
 ;;; handlers
 
-(defn set-dir [state dir file]
-  (assoc state dir (.getPath file)))
-
 (defn maybe-load-files [state dir-key dir]
   (if (= :from-dir dir-key)
     (let [files (wav-files-in-dir (.getPath dir))]
