@@ -29,9 +29,9 @@
   {:fx/type fx.ext.list-view/with-selection-props
    :props {:selection-mode :single
            :selected-item selected-item
-           :on-selected-item-changed {::event ::select-file}}
+           :on-selected-item-changed {::event ::no-op}}
    :desc {:fx/type :list-view
-          :cell-factory (fn [file] {:text (.getPath file)})
+          :cell-factory (fn [file] {:text (.getName file)})
           :items items}})
 
 (defn current-file-button [{:keys [state on-action text]}]
@@ -57,7 +57,7 @@
                                :children [{:fx/type :button
                                            :on-action {::event ::open-dir
                                                        :dir-key :from-dir}
-                                           :text "Select from folder"}
+                                           :text "Change source folder"}
                                           {:fx/type :label
                                            :text from-dir} ]}
                               {:fx/type :h-box
@@ -66,15 +66,15 @@
                                :children [{:fx/type :button
                                            :on-action {::event ::open-dir
                                                        :dir-key :to-dir}
-                                           :text "Select to-dir folder"}
+                                           :text "Change destination folder"}
                                           {:fx/type :label
                                            :text to-dir}]}
                               {:fx/type :h-box
                                :spacing 5
                                :alignment :center-left
-                               :children [{:fx/type current-file-button
-                                           :state state
-                                           :on-action {::event ::play-file}
+                               :children [{:fx/type :button
+                                           :on-action (if (seq files) {::event ::play-file} {})
+                                           :style {:-fx-text-fill (if (seq files) :black :grey)}
                                            :text "▶ PLAY"}
                                           {:fx/type current-file-button
                                            :state state
@@ -86,12 +86,7 @@
                                            :text "🕮 COPY"}]}
                               {:fx/type list-view
                                :items files
-                               :selected-item current-file}
-                              {:fx/type :text-area
-                               :v-box/vgrow :always
-                               :wrap-text true
-                               :editable false
-                               :text (str state)}])))
+                               :selected-item current-file}])))
 
 (defn root-view [state]
   {:fx/type :stage
@@ -140,6 +135,9 @@
 (defmethod handle ::select-file [{file :fx/event state :state}]
   {:state (assoc state :current-file file)
    :play file})
+
+(defmethod handle ::no-op [& args]
+  {})
 
 (defmethod handle ::open-dir [{:keys [^ActionEvent fx/event dir-key state]}]
   (let [window (.getWindow (.getScene ^Node (.getTarget event)))
