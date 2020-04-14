@@ -70,7 +70,9 @@
                                            :style {:-fx-text-fill (if from-dir :grey :red)}
                                            :text "Change source folder"}
                                           {:fx/type :label
-                                           :text from-dir} ]}
+                                           :text (if from-dir
+                                                   from-dir
+                                                   "Folder with files to audition and copy")}]}
                               {:fx/type :h-box
                                :spacing 5
                                :alignment :center-left
@@ -80,7 +82,9 @@
                                           :style {:-fx-text-fill (if (and from-dir to-dir) :grey :red)}
                                            :text "Change destination folder"}
                                           {:fx/type :label
-                                           :text to-dir}]}
+                                           :text (if to-dir
+                                                   to-dir
+                                                   "Destination folder for copied files")}]}
                               {:fx/type :h-box
                                :spacing 5
                                :alignment :center-left
