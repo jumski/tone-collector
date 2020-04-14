@@ -44,7 +44,7 @@
                               :alignment :center-left
                               :children [{:fx/type :button
                                           :on-action {::event ::open-dir
-                                                      :dir :from-dir}
+                                                      :dir-key :from-dir}
                                           :text "Select from folder"}
                                          {:fx/type :label
                                           :text (:from-dir state)}]}
@@ -53,7 +53,7 @@
                              :alignment :center-left
                              :children [{:fx/type :button
                                         :on-action {::event ::open-dir
-                                                    :dir :to-dir}
+                                                    :dir-key :to-dir}
                                          :text "Select to-dir folder"}
                                         {:fx/type :label
                                          :text (:to-dir state)}]}
@@ -85,9 +85,9 @@
 (defn set-dir [state dir file]
   (assoc state dir (.getPath file)))
 
-(defn maybe-load-files [state dir file]
-  (if (= :from-dir dir)
-    (let [files (wav-files-in-dir (.getPath file))]
+(defn maybe-load-files [state dir-key dir]
+  (if (= :from-dir dir-key)
+    (let [files (wav-files-in-dir (.getPath dir))]
       (-> state
           (assoc :files files)
           (assoc :current-file (first files))))
@@ -118,14 +118,14 @@
   {:state (assoc state :current-file file)
    :play-file file})
 
-(defmethod handle ::open-dir [{:keys [^ActionEvent fx/event dir state]}]
+(defmethod handle ::open-dir [{:keys [^ActionEvent fx/event dir-key state]}]
   (let [window (.getWindow (.getScene ^Node (.getTarget event)))
         chooser (doto (DirectoryChooser.)
                   (.setTitle "Open dir"))]
     (when-let [file @(fx/on-fx-thread (.showDialog chooser window))]
       {:state (-> state
-                  (set-dir dir file)
-                  (maybe-load-files dir file))})))
+                  (assoc dir-key (.getPath file))
+                  (maybe-load-files dir-key file))})))
 
 (def renderer
   (fx/create-renderer
