@@ -37,17 +37,19 @@
           :cell-factory (fn [file] {:text (.getPath file)})
           :items items}})
 
-(defn current-file-button [{:keys [current-file on-action text]}]
-  (if current-file
-    {:fx/type :button
-     :on-action on-action
-     :style {:-fx-text-fill :black}
-     :text text}
-    {:fx/type :button
-     :style {:-fx-text-fill :grey}
-     :text text}))
+(defn current-file-button [{:keys [state on-action text]}]
+  (let [{:keys [files from-dir to-dir]} state
+        current-file (first files)]
+    (if (and current-file from-dir to-dir)
+      {:fx/type :button
+       :on-action on-action
+       :style {:-fx-text-fill :black}
+       :text text}
+      {:fx/type :button
+       :style {:-fx-text-fill :grey}
+       :text text})))
 
-(defn on-init-view [{:keys [state] :as x}]
+(defn on-init-view [{:keys [state]}]
   (let [current-file (first (:files state))
         from-dir (:from-dir state)
         to-dir (:to-dir state)
@@ -74,15 +76,15 @@
                                :spacing 5
                                :alignment :center-left
                                :children [{:fx/type current-file-button
-                                           :current-file current-file
+                                           :state state
                                            :on-action {::event ::play-file}
                                            :text "▶ PLAY"}
                                           {:fx/type current-file-button
-                                           :current-file current-file
+                                           :state state
                                            :on-action {::event ::skip-file}
                                            :text "⏩SKIP"}
                                           {:fx/type current-file-button
-                                           :current-file current-file
+                                           :state state
                                            :on-action {::event ::move-file}
                                            :text "🕮 MOVE"}]}
                               {:fx/type list-view
@@ -104,7 +106,7 @@
    :width 500
    :height 600
    :scene {:fx/type :scene
-           :on-key-pressed {::event ::key-pressed}
+           ; :on-key-pressed {::event ::key-pressed}
            :root {:fx/type on-init-view
                   :state state}}})
 
@@ -139,26 +141,29 @@
   (let [kcode (.getCode ^KeyEvent event)]
     (println "kcode" kcode)
     (if (play-keycodes kcode)
-      {:play-current state}
+      {:play state}
       {})))
 
 (defmethod handle ::play-file [{:keys [state]}]
-  {:play-current state})
+  {:play (first (:files state))})
 
 (defmethod handle ::skip-file [{:keys [state]}]
-  {:state (update state :files rest)})
+  (let [new-state (update state :files rest)
+        file-to-play (first (:files new-state))]
+    {:state new-state
+     :play file-to-play}))
 
 (defmethod handle ::move-file [{:keys [state]}]
-  (if-let [current-file (first (:files state))]
-    {:state (update state :files rest)
-     :move-current current-file
-     :play-current state}
-    {:state (update state :files rest)
-     :play-current state}))
+  (if (seq (:files state))
+    (let [[file-to-move file-to-play] (:files state)]
+      {:state (update state :files rest)
+       :move {:file file-to-move :to-dir (:to-dir state)}
+       :play file-to-play})
+    {}))
 
 (defmethod handle ::select-file [{file :fx/event state :state}]
   {:state (assoc state :current-file file)
-   :play-current file})
+   :play file})
 
 (defmethod handle ::open-dir [{:keys [^ActionEvent fx/event dir-key state]}]
   (let [window (.getWindow (.getScene ^Node (.getTarget event)))
@@ -176,12 +181,9 @@
            (-> handle
                (fx/wrap-co-effects {:state (fx/make-deref-co-effect *state)})
                (fx/wrap-effects {:state (fx/make-reset-effect *state)
-                                 :play-current (fn [{:keys [files]} _]
-                                                              (if-let [f (first files)]
-                                                                (play-file f)))
-                                 :move-current (fn [{:keys [files]} _]
-                                                              (if-let [f (first files)]
-                                                                (println "MOVE CURRENT:" f)))
+                                 :play (fn [f _] (if f (play-file f)))
+                                 :move (fn [{:keys [file to-dir]} _]
+                                         (println "MOVE:" {:file file :to-dir to-dir}))
                                  :dispatch fx/dispatch-effect})
                (fx/wrap-async))}))
 
