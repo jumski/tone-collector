@@ -37,44 +37,63 @@
           :cell-factory (fn [file] {:text (.getPath file)})
           :items items}})
 
+(defn current-file-button [{:keys [current-file on-action text]}]
+  (if current-file
+    {:fx/type :button
+     :on-action on-action
+     :style {:-fx-text-fill :black}
+     :text text}
+    {:fx/type :button
+     :style {:-fx-text-fill :grey}
+     :text text}))
 
 (defn on-init-view [{:keys [state] :as x}]
-  (v-layout-view :children [{:fx/type :h-box
-                              :spacing 5
-                              :alignment :center-left
-                              :children [{:fx/type :button
-                                          :on-action {::event ::open-dir
-                                                      :dir-key :from-dir}
-                                          :text "Select from folder"}
-                                         {:fx/type :label
-                                          :text (:from-dir state)} ]}
-                            {:fx/type :h-box
-                             :spacing 5
-                             :alignment :center-left
-                             :children [{:fx/type :button
-                                        :on-action {::event ::open-dir
-                                                    :dir-key :to-dir}
-                                         :text "Select to-dir folder"}
-                                        {:fx/type :label
-                                         :text (:to-dir state)}]}
-                            {:fx/type :h-box
-                             :spacing 5
-                             :alignment :center-left
-                             :children [{:fx/type :button
-                                         :on-action {::event ::skip-file}
-                                         :text ">> SKIP"}
-                                        {:fx/type :button
-                                         :on-action {::event ::move-file}
-                                         :text "!!! MOVE !!!"}]}
-                            {:fx/type list-view
-                             :items (:files state)
-                             :on-key-pressed {::event ::key-pressed}
-                             :selected-item (:current-file state)}
-                            {:fx/type :text-area
-                             :v-box/vgrow :always
-                             :wrap-text true
-                             :editable false
-                             :text (str state)}]))
+  (let [current-file (first (:files state))
+        from-dir (:from-dir state)
+        to-dir (:to-dir state)
+        files (:files state)]
+    (v-layout-view :children [{:fx/type :h-box
+                               :spacing 5
+                               :alignment :center-left
+                               :children [{:fx/type :button
+                                           :on-action {::event ::open-dir
+                                                       :dir-key :from-dir}
+                                           :text "Select from folder"}
+                                          {:fx/type :label
+                                           :text from-dir} ]}
+                              {:fx/type :h-box
+                               :spacing 5
+                               :alignment :center-left
+                               :children [{:fx/type :button
+                                           :on-action {::event ::open-dir
+                                                       :dir-key :to-dir}
+                                           :text "Select to-dir folder"}
+                                          {:fx/type :label
+                                           :text to-dir}]}
+                              {:fx/type :h-box
+                               :spacing 5
+                               :alignment :center-left
+                               :children [{:fx/type current-file-button
+                                           :current-file current-file
+                                           :on-action {::event ::play-file}
+                                           :text "▶ PLAY"}
+                                          {:fx/type current-file-button
+                                           :current-file current-file
+                                           :on-action {::event ::skip-file}
+                                           :text "⏩SKIP"}
+                                          {:fx/type current-file-button
+                                           :current-file current-file
+                                           :on-action {::event ::move-file}
+                                           :text "🕮 MOVE"}]}
+                              {:fx/type list-view
+                               :items files
+                               :on-key-pressed {::event ::key-pressed}
+                               :selected-item current-file}
+                              {:fx/type :text-area
+                               :v-box/vgrow :always
+                               :wrap-text true
+                               :editable false
+                               :text (str state)}])))
 
 (defn root-view [state]
   {:fx/type :stage
@@ -120,12 +139,26 @@
   (let [kcode (.getCode ^KeyEvent event)]
     (println "kcode" kcode)
     (if (play-keycodes kcode)
-      {:play-file (:current-file state)}
+      {:play-current state}
       {})))
+
+(defmethod handle ::play-file [{:keys [state]}]
+  {:play-current state})
+
+(defmethod handle ::skip-file [{:keys [state]}]
+  {:state (update state :files rest)})
+
+(defmethod handle ::move-file [{:keys [state]}]
+  (if-let [current-file (first (:files state))]
+    {:state (update state :files rest)
+     :move-current current-file
+     :play-current state}
+    {:state (update state :files rest)
+     :play-current state}))
 
 (defmethod handle ::select-file [{file :fx/event state :state}]
   {:state (assoc state :current-file file)
-   :play-file file})
+   :play-current file})
 
 (defmethod handle ::open-dir [{:keys [^ActionEvent fx/event dir-key state]}]
   (let [window (.getWindow (.getScene ^Node (.getTarget event)))
@@ -136,9 +169,6 @@
                   (assoc dir-key (.getPath file))
                   (maybe-load-files dir-key file))})))
 
-; (defmethod handle ::move-file [{:keys [state]}]
-;   (if-let [next-file
-
 (def renderer
   (fx/create-renderer
     :middleware (fx/wrap-map-desc #(root-view %))
@@ -146,7 +176,12 @@
            (-> handle
                (fx/wrap-co-effects {:state (fx/make-deref-co-effect *state)})
                (fx/wrap-effects {:state (fx/make-reset-effect *state)
-                                 :play-file (fn [file _] (play-file file))
+                                 :play-current (fn [{:keys [files]} _]
+                                                              (if-let [f (first files)]
+                                                                (play-file f)))
+                                 :move-current (fn [{:keys [files]} _]
+                                                              (if-let [f (first files)]
+                                                                (println "MOVE CURRENT:" f)))
                                  :dispatch fx/dispatch-effect})
                (fx/wrap-async))}))
 
@@ -154,7 +189,7 @@
 
 (comment
   (renderer)
-  (reset! *state (maybe-load-files @*state :from-dir (clojure.java.io/file"resources/"))
+  (reset! *state (maybe-load-files @*state :from-dir (clojure.java.io/file"resources/")))
   (defn sf [f]
     (handle {::event ::select-file :fx/event f :state @*state}))
 
