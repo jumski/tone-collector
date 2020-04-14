@@ -82,20 +82,21 @@
                               {:fx/type :h-box
                                :spacing 5
                                :alignment :center-left
-                               :children [{:fx/type :label
-                                           :text (str "Current file: " (.getName current-file))}
-                                          {:fx/type :button
-                                           :on-action (if (seq files) {::event ::play-file} {})
-                                           :style {:-fx-text-fill (if (seq files) :black :grey)}
-                                           :text "▶ PLAY"}
-                                          {:fx/type current-file-button
-                                           :state state
-                                           :on-action {::event ::skip-file}
-                                           :text "⏩SKIP"}
-                                          {:fx/type current-file-button
-                                           :state state
-                                           :on-action {::event ::copy-file}
-                                           :text "🕮 COPY"}]}
+                               :children (->> [(if current-file {:fx/type :label
+                                                                :text (str "Current file: " (.getName current-file))})
+                                              {:fx/type :button
+                                               :on-action (if (seq files) {::event ::play-file} {})
+                                               :style {:-fx-text-fill (if (seq files) :black :grey)}
+                                               :text "▶ PLAY"}
+                                              {:fx/type current-file-button
+                                               :state state
+                                               :on-action {::event ::skip-file}
+                                               :text "⏩SKIP"}
+                                              {:fx/type current-file-button
+                                               :state state
+                                               :on-action {::event ::copy-file}
+                                               :text "🕮 COPY"}]
+                                             (filter identity))}
                               {:fx/type list-view
                                :items files
                                :selected-item current-file}])))
