@@ -48,10 +48,33 @@
                          (str iname " (last note: " (:last-note midi) ")"))}]}))
 
 (defn midi-note-mapper [{:keys [midi action]}]
-  (let [action-name (clojure.string/capitalize (name action))
-        input (:input midi)]
+  (let [action-name (clojure.string/upper-case (name action))
+        input (:input midi)
+        mapped-note (action midi)
+        waiting-for-note? (:waiting-for-note midi)
+        this-action-waits? (= action waiting-for-note?)
+        text-color (cond
+                    mapped-note :black
+                    (not waiting-for-note?) :red
+                    this-action-waits? :red
+                    ; (not this-action-waits?) :grey
+                    :else :grey)
+
+                    ; (or (nil? input) (not this-action-waits?)) :grey
+                    ; (nil? mapped-note) :red
+                    ; :else :black)
+        text (cond
+               this-action-waits? (str "Press button for " action-name "!")
+               (nil? mapped-note) (str "Map " action-name)
+               :else (str "ReMap " action-name))
+        on-action (if this-action-waits?
+                    {:event :cancel-waiting-for-note}
+                    {:event :start-waiting-for-note :action action})]
+    (println "x" [mapped-note this-action-waits? text-color text])
     {:fx/type :button
-     :text (str "Map " action-name)}))
+     :on-action on-action
+     :style {:-fx-text-fill text-color}
+     :text text}))
 
 (defn midi-configuration [{:keys [state]}]
   (let [midi-config (:midi state)

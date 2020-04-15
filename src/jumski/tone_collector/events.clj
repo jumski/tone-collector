@@ -63,8 +63,13 @@
   {:state (assoc-in state [:midi :input] input)})
 
 (defmethod handle :midi-note-on [{:keys [state note]}]
-  (println "Note: " note)
   {:state (assoc-in state [:midi :last-note] note)})
+
+(defmethod handle :cancel-waiting-for-note [{:keys [state]}]
+  {:state (assoc-in state [:midi :waiting-for-note] nil)})
+
+(defmethod handle :start-waiting-for-note [{:keys [state action]}]
+  {:state (assoc-in state [:midi :waiting-for-note] action)})
 
 ;;; rapid feedback for :Require
 ; (jumski.tone-collector.main-gui/renderer)

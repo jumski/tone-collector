@@ -15,6 +15,7 @@
          :to-dir nil
          :files []
          :midi {:input nil
+                :waiting-for-note nil
                 :play nil
                 :skip nil
                 :copy nil}}))
