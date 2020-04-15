@@ -135,16 +135,16 @@
                  :spacing 5
                  :alignment :center-left
                  :children (->> [{:fx/type :button
-                                  :on-action (if (seq files) {:event :play-file} {})
+                                  :on-action (if (seq files) {:event :play} {})
                                   :style {:-fx-text-fill (if (seq files) :black :grey)}
                                   :text "▶ PLAY"}
                                  {:fx/type current-file-button
                                   :state state
-                                  :on-action {:event :skip-file}
+                                  :on-action {:event :skip}
                                   :text "⏩SKIP"}
                                  {:fx/type current-file-button
                                   :state state
-                                  :on-action {:event :copy-file}
+                                  :on-action {:event :copy}
                                   :text "🕮 COPY"}]
                                 (filter identity))}
                 {:fx/type list-view
