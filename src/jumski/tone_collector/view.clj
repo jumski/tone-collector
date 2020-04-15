@@ -4,10 +4,7 @@
             [cljfx.ext.list-view :as fx.ext.list-view]))
 
 (defn v-layout-view [& {:keys [children]}]
-  {:fx/type :v-box
-   :padding 5
-   :spacing 5
-   :children (vec children)})
+  )
 
 (defn file-cell-factory [selected-file file]
   {:text (.getName file)
@@ -45,51 +42,52 @@
         from-dir (:from-dir state)
         to-dir (:to-dir state)
         files (:files state)]
-    (v-layout-view :children [{:fx/type :h-box
-                               :spacing 5
-                               :alignment :center-left
-                               :children [{:fx/type :button
-                                           :on-action {:event :open-dir
-                                                       :dir-key :from-dir}
-                                           :style {:-fx-text-fill (if from-dir :grey :red)}
-                                           :text "Change source folder"}
-                                          {:fx/type :label
-                                           :text (if from-dir
-                                                   from-dir
-                                                   "Folder with files to audition and copy")}]}
-                              {:fx/type :h-box
-                               :spacing 5
-                               :alignment :center-left
-                               :children [{:fx/type :button
-                                           :on-action {:event :open-dir
-                                                       :dir-key :to-dir}
-                                          :style {:-fx-text-fill (if (and from-dir to-dir) :grey :red)}
-                                           :text "Change destination folder"}
-                                          {:fx/type :label
-                                           :text (if to-dir
-                                                   to-dir
-                                                   "Destination folder for copied files")}]}
-                              {:fx/type :h-box
-                               :spacing 5
-                               :alignment :center-left
-                               :children (->> [(if current-file {:fx/type :label
-                                                                :text (str "Current file: " (.getName current-file))})
-                                              {:fx/type :button
-                                               :on-action (if (seq files) {:event :play-file} {})
-                                               :style {:-fx-text-fill (if (seq files) :black :grey)}
-                                               :text "▶ PLAY"}
-                                              {:fx/type current-file-button
-                                               :state state
-                                               :on-action {:event :skip-file}
-                                               :text "⏩SKIP"}
-                                              {:fx/type current-file-button
-                                               :state state
-                                               :on-action {:event :copy-file}
-                                               :text "🕮 COPY"}]
-                                             (filter identity))}
-                              {:fx/type list-view
-                               :items files
-                               :selected-item current-file}])))
+    {:fx/type :v-box
+     :padding 5
+     :spacing 5
+     :children [{:fx/type :h-box
+                 :spacing 5
+                 :alignment :center-left
+                 :children [{:fx/type :button
+                             :on-action {:event :open-dir
+                                         :dir-key :from-dir}
+                             :style {:-fx-text-fill (if from-dir :grey :red)}
+                             :text "Change source folder"}
+                            {:fx/type :label
+                             :text (if from-dir
+                                     from-dir
+                                     "Folder with files to audition and copy")}]}
+                {:fx/type :h-box
+                 :spacing 5
+                 :alignment :center-left
+                 :children [{:fx/type :button
+                             :on-action {:event :open-dir
+                                         :dir-key :to-dir}
+                             :style {:-fx-text-fill (if (and from-dir to-dir) :grey :red)}
+                             :text "Change destination folder"}
+                            {:fx/type :label
+                             :text (if to-dir
+                                     to-dir
+                                     "Destination folder for copied files")}]}
+                {:fx/type :h-box
+                 :spacing 5
+                 :alignment :center-left
+                 :children (->> [{:fx/type :button
+                                  :on-action (if (seq files) {:event :play-file} {})
+                                  :style {:-fx-text-fill (if (seq files) :black :grey)}
+                                  :text "▶ PLAY"}
+                                 {:fx/type current-file-button
+                                  :state state
+                                  :on-action {:event :skip-file}
+                                  :text "⏩SKIP"}
+                                 {:fx/type current-file-button
+                                  :state state
+                                  :on-action {:event :copy-file}
+                                  :text "🕮 COPY"}]
+                                (filter identity))}
+                {:fx/type list-view
+                 :items files
+                 :selected-item current-file}]}))
 
 (defn root-view [state]
   {:fx/type :stage
