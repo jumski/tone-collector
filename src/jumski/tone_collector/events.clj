@@ -19,6 +19,9 @@
 
 (defmulti handle :event)
 
+(defmethod handle :confirm-info-dialog [{:keys [state]}]
+  {:state (assoc state :info-dialog-confirmed true)})
+
 (defmethod handle :play-file [{:keys [state]}]
   {:play (first (:files state))})
 
@@ -51,3 +54,6 @@
       {:state (-> state
                   (assoc dir-key (.getPath file))
                   (maybe-load-files dir-key file))})))
+
+;;; rapid feedback for :Require
+; (jumski.tone-collector.main-gui/renderer)

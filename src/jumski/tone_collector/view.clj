@@ -3,9 +3,6 @@
             [cljfx.api :as fx]
             [cljfx.ext.list-view :as fx.ext.list-view]))
 
-(defn v-layout-view [& {:keys [children]}]
-  )
-
 (defn file-cell-factory [selected-file file]
   {:text (.getName file)
    :style {:-fx-background :-fx-control-inner-background
@@ -52,11 +49,13 @@
                              :on-action {:event :open-dir
                                          :dir-key :from-dir}
                              :style {:-fx-text-fill (if from-dir :grey :red)}
+                             :tooltip {:fx/type :tooltip
+                                       :text "ziemniak"}
                              :text "Change source folder"}
                             {:fx/type :label
-                             :text (if from-dir
-                                     from-dir
-                                     "Folder with files to audition and copy")}]}
+                              :text (if from-dir
+                                      from-dir
+                                      "Folder with files to audition and copy")}]}
                 {:fx/type :h-box
                  :spacing 5
                  :alignment :center-left
@@ -89,6 +88,33 @@
                  :items files
                  :selected-item current-file}]}))
 
+;;; info dialog
+
+(def title-text "Tone Collector")
+(def tagline-text "Simple program to select and copy one-shot samples using a midi controller")
+(def help-text "1. Select source folder
+2. Select destination folder
+3. Select MIDI input device
+4. Map PLAY, SKIP and COPY actions to buttons/keys on your midi device
+5. First sample on the list is the 'current sample'
+6. Press PLAY to audition 'current sample'
+7. Press SKIP to skip 'current sample' and go to the next
+8. Press COPY to copy 'current sample' to destination folder and go to the next sample
+9. When run out of samples, select new or same source folder again.")
+
+(defn info-dialog [{:keys [state]}]
+  {:fx/type :v-box
+   :children [{:fx/type :label
+             :wrap-text true
+             :text (clojure.string/join "\n" [title-text
+                                              tagline-text
+                                              help-text])}
+              {:fx/type :button
+               :text "Click to continue"
+               :on-action {:event :confirm-info-dialog}}]})
+
+;;; root view
+
 (defn root-view [state]
   {:fx/type :stage
    :title "Textual dir viewer"
@@ -98,5 +124,8 @@
    :width 500
    :height 600
    :scene {:fx/type :scene
-           :root {:fx/type on-init-view
+           :root {:fx/type (if (:info-dialog-confirmed state) on-init-view info-dialog)
                   :state state}}})
+
+;;; rapid feedback for :Require
+; (jumski.tone-collector.main-gui/renderer)

@@ -8,10 +8,16 @@
 
 ;;; state
 
-(def *state
-  (atom {:from-dir nil
+(def default-state
+  (atom {:info-dialog-confirmed false
+         :from-dir nil
          :to-dir nil
          :files []}))
+
+(defonce *state default-state)
+
+(defn reset-default-state! []
+  (reset! *state default-state))
 
 ;;; effects
 
@@ -38,3 +44,6 @@
                (fx/wrap-async))}))
 
 (fx/mount-renderer *state renderer)
+
+;;; rapid feedback for :Require
+; (jumski.tone-collector.main-gui/renderer)
