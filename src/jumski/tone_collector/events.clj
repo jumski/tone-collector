@@ -1,7 +1,8 @@
 (ns jumski.tone-collector.events
   (:require
     [cljfx.api :as fx]
-    [jumski.tone-collector.file :refer [wav-files-in-dir]])
+    [jumski.tone-collector.file :refer [wav-files-in-dir]]
+    [overtone.midi :as midi])
   (:import
     [javafx.stage DirectoryChooser]
     [javafx.event ActionEvent]
@@ -54,6 +55,10 @@
       {:state (-> state
                   (assoc dir-key (.getPath file))
                   (maybe-load-files dir-key file))})))
+
+(defmethod handle :open-midi-input-dialog [{:keys [fx/event state]}]
+  {:state (-> state
+              (assoc-in [:midi :input] (midi/midi-in)))})
 
 ;;; rapid feedback for :Require
 ; (jumski.tone-collector.main-gui/renderer)

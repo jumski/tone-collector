@@ -12,7 +12,11 @@
   (atom {:info-dialog-confirmed false
          :from-dir nil
          :to-dir nil
-         :files []}))
+         :files []
+         :midi {:input nil
+                :play nil
+                :skip nil
+                :copy nil}}))
 
 (defonce *state default-state)
 

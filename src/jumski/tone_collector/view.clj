@@ -34,6 +34,45 @@
        :style {:-fx-text-fill :grey}
        :text text})))
 
+(defn midi-input-chooser [{:keys [midi]}]
+  (let [input (:input midi)]
+    {:fx/type :h-box
+     :spacing 5
+     :alignment :center-left
+     :children [{:fx/type :button
+                 :text "Change MIDI Input"
+                 :style {:-fx-text-fill (if input :black :red)}
+                 :on-action {:event :open-midi-input-dialog}}
+                {:fx/type :label
+                 :text (:name input)}]}))
+
+(defn midi-note-mapper [{:keys [midi action]}]
+  (let [action-name (clojure.string/capitalize (name action))
+        input (:input midi)]
+    {:fx/type :button
+     :text (str "Map " action-name)}))
+
+(defn midi-configuration [{:keys [state]}]
+  (let [midi-config (:midi state)
+        {:keys [input play skip copy]} midi-config]
+    {:fx/type :v-box
+     :spacing 5
+     :alignment :center-left
+     :children [{:fx/type midi-input-chooser
+                 :midi midi-config}
+                {:fx/type :h-box
+                 :spacing 5
+                 :alignment :center-left
+                 :children [{:fx/type midi-note-mapper
+                             :action :play
+                             :midi midi-config}
+                            {:fx/type midi-note-mapper
+                             :action :skip
+                             :midi midi-config}
+                            {:fx/type midi-note-mapper
+                             :action :copy
+                             :midi midi-config}]}]}))
+
 (defn on-init-view [{:keys [state]}]
   (let [current-file (first (:files state))
         from-dir (:from-dir state)
@@ -68,6 +107,11 @@
                              :text (if to-dir
                                      to-dir
                                      "Destination folder for copied files")}]}
+                {:fx/type :h-box
+                 :spacing 5
+                 :alignment :center-left
+                 :children [{:fx/type midi-configuration
+                             :state state}]}
                 {:fx/type :h-box
                  :spacing 5
                  :alignment :center-left
