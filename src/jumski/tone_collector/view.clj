@@ -57,16 +57,11 @@
                     mapped-note :black
                     (not waiting-for-note?) :red
                     this-action-waits? :red
-                    ; (not this-action-waits?) :grey
                     :else :grey)
-
-                    ; (or (nil? input) (not this-action-waits?)) :grey
-                    ; (nil? mapped-note) :red
-                    ; :else :black)
         text (cond
                this-action-waits? (str "Press button for " action-name "!")
                (nil? mapped-note) (str "Map " action-name)
-               :else (str "ReMap " action-name))
+               :else (str "Remap " action-name " [" mapped-note "]"))
         on-action (if this-action-waits?
                     {:event :cancel-waiting-for-note}
                     {:event :start-waiting-for-note :action action})]

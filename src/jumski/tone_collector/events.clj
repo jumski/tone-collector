@@ -1,8 +1,7 @@
 (ns jumski.tone-collector.events
   (:require
     [cljfx.api :as fx]
-    [jumski.tone-collector.file :refer [wav-files-in-dir]]
-    [overtone.midi :as midi])
+    [jumski.tone-collector.file :refer [wav-files-in-dir]])
   (:import
     [javafx.stage DirectoryChooser]
     [javafx.event ActionEvent]
@@ -63,7 +62,12 @@
   {:state (assoc-in state [:midi :input] input)})
 
 (defmethod handle :midi-note-on [{:keys [state note]}]
-  {:state (assoc-in state [:midi :last-note] note)})
+  (let [midi (:midi state)
+        action-that-waits (:waiting-for-note midi)]
+  {:state (-> state
+              (assoc-in [:midi :last-note] note)
+              (assoc-in [:midi action-that-waits] note)
+              (assoc-in [:midi :waiting-for-note] nil))}))
 
 (defmethod handle :cancel-waiting-for-note [{:keys [state]}]
   {:state (assoc-in state [:midi :waiting-for-note] nil)})
