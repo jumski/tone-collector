@@ -57,8 +57,14 @@
                   (maybe-load-files dir-key file))})))
 
 (defmethod handle :open-midi-input-dialog [{:keys [fx/event state]}]
-  {:state (-> state
-              (assoc-in [:midi :input] (midi/midi-in)))})
+  {:choose-midi-input state})
+
+(defmethod handle :set-midi-input [{:keys [state input]}]
+  {:state (assoc-in state [:midi :input] input)})
+
+(defmethod handle :midi-note-on [{:keys [state note]}]
+  (println "Note: " note)
+  {:state (assoc-in state [:midi :last-note] note)})
 
 ;;; rapid feedback for :Require
 ; (jumski.tone-collector.main-gui/renderer)

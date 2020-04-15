@@ -44,7 +44,8 @@
                  :style {:-fx-text-fill (if input :black :red)}
                  :on-action {:event :open-midi-input-dialog}}
                 {:fx/type :label
-                 :text (:name input)}]}))
+                 :text (if-let [iname (:name input)]
+                         (str iname " (last note: " (:last-note midi) ")"))}]}))
 
 (defn midi-note-mapper [{:keys [midi action]}]
   (let [action-name (clojure.string/capitalize (name action))

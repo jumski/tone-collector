@@ -4,6 +4,7 @@
     [jumski.tone-collector.player :refer [play-file]]
     [jumski.tone-collector.view :as view]
     [jumski.tone-collector.events :as events]
+    [overtone.midi :as midi]
     [clojure.java.io :as io]))
 
 ;;; state
@@ -33,6 +34,15 @@
   (let [to-file (io/file to-dir (.getName file))]
     (io/copy file to-file)))
 
+(defn choose-midi-input-effect [state dispatch!]
+  (let [midi-input (midi/midi-in)
+        midi-event-handler (fn [{:keys [command note]}]
+                             (if (= :note-on command)
+                               (dispatch! {:event :midi-note-on
+                                           :note note})))]
+    (midi/midi-handle-events midi-input midi-event-handler)
+    (dispatch! {:event :set-midi-input :input midi-input})))
+
 ;;; renderer
 
 (def renderer
@@ -44,6 +54,7 @@
                (fx/wrap-effects {:state (fx/make-reset-effect *state)
                                  :play play-effect
                                  :copy copy-effect
+                                 :choose-midi-input choose-midi-input-effect
                                  :dispatch fx/dispatch-effect})
                (fx/wrap-async))}))
 
