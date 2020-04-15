@@ -54,9 +54,9 @@
         waiting-for-note? (:waiting-for-note midi)
         this-action-waits? (= action waiting-for-note?)
         text-color (cond
+                    this-action-waits? :red
                     mapped-note :black
                     (not waiting-for-note?) :red
-                    this-action-waits? :red
                     :else :grey)
         text (cond
                this-action-waits? (str "Press button for " action-name "!")
@@ -65,7 +65,7 @@
         on-action (if this-action-waits?
                     {:event :cancel-waiting-for-note}
                     {:event :start-waiting-for-note :action action})]
-    (println "x" [mapped-note this-action-waits? text-color text])
+    (println "x" {:mapped-note mapped-note :this-action-waits? this-action-waits? :text-color text-color :text text})
     {:fx/type :button
      :on-action on-action
      :style {:-fx-text-fill text-color}
