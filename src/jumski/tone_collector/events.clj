@@ -21,10 +21,7 @@
   {:state (assoc state :info-dialog-confirmed true)})
 
 (defmethod handle :play [{:keys [state]}]
-  (let [{:keys [midi]} state]
-    (if (:mapping-note-for-action state)
-      {}
-      {:play (first (:files state))})))
+  {:play (first (:files state))})
 
 (defmethod handle :skip [{:keys [state]}]
   (let [new-state (update state :files rest)
