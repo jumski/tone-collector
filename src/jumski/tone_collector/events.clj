@@ -37,13 +37,6 @@
        :play file-to-play})
     {}))
 
-(defmethod handle :select-file [{file :fx/event state :state}]
-  {:state (assoc state :current-file file)
-   :play file})
-
-(defmethod handle :no-op [& args]
-  {})
-
 (defmethod handle :open-dir [{:keys [^ActionEvent fx/event dir-key state]}]
   (let [window (.getWindow (.getScene ^Node (.getTarget event)))
         chooser (doto (DirectoryChooser.)
