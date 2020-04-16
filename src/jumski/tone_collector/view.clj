@@ -151,31 +151,40 @@
                  :selected-item current-file}]}))
 
 (def title-text "Tone Collector")
-(def tagline-text "Simple program to select and copy one-shot samples using a midi controller")
-(def help-text "1. Select source folder
+(def tagline-text "Select and copy samples with your MIDI controller")
+(def help-text "1. Select source folder (can contain subfolders)
 2. Select destination folder
 3. Select MIDI input device
 4. Map PLAY, SKIP and COPY actions to buttons/keys on your midi device
 5. First sample on the list is the 'current sample'
-6. Press PLAY to audition 'current sample'
-7. Press SKIP to skip 'current sample' and go to the next
-8. Press COPY to copy 'current sample' to destination folder and go to the next sample
+6. PLAY auditions 'current sample'
+7. SKIP goes to next sample, not copying anything
+8. COPY copies 'current sample' to destination folder and goes to next sample
 9. When run out of samples, select new or same source folder again.")
+
 
 (defn info-dialog [{:keys [state]}]
   {:fx/type :v-box
+   :spacing 30
+   :style {:-fx-padding 20}
    :children [{:fx/type :label
-             :wrap-text true
-             :text (clojure.string/join "\n" [title-text
-                                              tagline-text
-                                              help-text])}
+               :style {:-fx-font-size 36
+                       :-fx-font-weight :bold}
+               :text title-text}
+              {:fx/type :label
+               :style {:-fx-font-size 16}
+               :wrap-text true
+               :text tagline-text}
+              {:fx/type :label
+               :wrap-text true
+               :text help-text}
               {:fx/type :button
                :text "Click to continue"
                :on-action {:event :confirm-info-dialog}}]})
 
 (defn root-view [state]
   {:fx/type :stage
-   :title "Textual dir viewer"
+   :title "Tone Collector"
    :showing true
    :x 20
    :y 20
