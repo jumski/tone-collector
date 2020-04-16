@@ -150,8 +150,6 @@
                  :items files
                  :selected-item current-file}]}))
 
-;;; info dialog
-
 (def title-text "Tone Collector")
 (def tagline-text "Simple program to select and copy one-shot samples using a midi controller")
 (def help-text "1. Select source folder
@@ -175,8 +173,6 @@
                :text "Click to continue"
                :on-action {:event :confirm-info-dialog}}]})
 
-;;; root view
-
 (defn root-view [state]
   {:fx/type :stage
    :title "Textual dir viewer"
@@ -188,6 +184,3 @@
    :scene {:fx/type :scene
            :root {:fx/type (if (:info-dialog-confirmed state) on-init-view info-dialog)
                   :state state}}})
-
-;;; rapid feedback for :Require
-; (jumski.tone-collector.main-gui/renderer)
