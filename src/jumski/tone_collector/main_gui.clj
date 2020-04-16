@@ -10,6 +10,7 @@
    :from-dir nil
    :to-dir nil
    :files []
+   :player nil
    :midi {:input nil
           :mapping-note-for-action nil
           :play nil

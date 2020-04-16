@@ -1,7 +1,8 @@
 (ns jumski.tone-collector.events
   (:require
     [cljfx.api :as fx]
-    [jumski.tone-collector.file :refer [wav-files-in-dir]])
+    [jumski.tone-collector.file :refer [wav-files-in-dir]]
+    [jumski.tone-collector.player :as player])
   (:import
     [javafx.stage DirectoryChooser]
     [javafx.event ActionEvent]
@@ -12,7 +13,7 @@
     (let [files (wav-files-in-dir (.getPath dir))]
       (-> state
           (assoc :files files)
-          (assoc :current-file (first files))))
+          (assoc :player (player/create (first files)))))
     state))
 
 (defmulti handle :event)
@@ -21,20 +22,26 @@
   {:state (assoc state :info-dialog-confirmed true)})
 
 (defmethod handle :play [{:keys [state]}]
-  {:play (first (:files state))})
+  {:play (:player state)})
 
 (defmethod handle :skip [{:keys [state]}]
-  (let [new-state (update state :files rest)
-        file-to-play (first (:files new-state))]
+  (let [new-files (rest (:files state))
+        player (player/create (first new-files))
+        new-state (-> state
+                      (assoc :files new-files)
+                      (assoc :player player))]
     {:state new-state
-     :play file-to-play}))
+     :play player}))
 
 (defmethod handle :copy [{:keys [state]}]
   (if (seq (:files state))
-    (let [[file-to-move file-to-play] (:files state)]
-      {:state (update state :files rest)
+    (let [[file-to-move file-to-play] (:files state)
+          player (player/create file-to-play)]
+      {:state (-> state
+                  (update :files rest)
+                  (assoc :player player))
        :copy {:file file-to-move :to-dir (:to-dir state)}
-       :play file-to-play})
+       :play player})
     {}))
 
 (defmethod handle :open-dir [{:keys [^ActionEvent fx/event dir-key state]}]
