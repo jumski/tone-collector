@@ -7,14 +7,15 @@
 
 (def default-state
   {:info-dialog-confirmed false
-         :from-dir nil
-         :to-dir nil
-         :files []
-         :midi {:input nil
-                :mapping-note-for-action nil
-                :play nil
-                :skip nil
-                :copy nil}})
+   :from-dir nil
+   :to-dir nil
+   :files []
+   :player nil
+   :midi {:input nil
+          :mapping-note-for-action nil
+          :play nil
+          :skip nil
+          :copy nil}})
 
 (defonce *state (atom default-state))
 

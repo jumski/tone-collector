@@ -2,11 +2,11 @@
   (:require
     [overtone.midi :as midi]
     [clojure.java.io :as io]
-    [jumski.tone-collector.player :refer [play-file]]))
+    [jumski.tone-collector.player :as player]))
 
-(defn play-effect [file _]
-  (if file
-    (play-file file)))
+(defn play-effect [aplayer _]
+  (if aplayer
+    (player/play aplayer)))
 
 (defn copy-effect [{:keys [^java.io.File file to-dir]} _]
   (let [to-file (io/file to-dir (.getName file))]

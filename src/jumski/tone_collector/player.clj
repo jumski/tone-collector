@@ -2,12 +2,20 @@
   (:import [javafx.scene.media MediaPlayer Media]
            [javafx.util Duration]))
 
-(defn play-file [file]
+(def *player (atom nil))
+(def *last-file (atom nil))
+
+(def start (Duration/seconds 0))
+(def stop (Duration/seconds 2))
+
+(defn create [file]
   (let [media (-> file .toURI .toString Media.)
-        start (Duration/seconds 0)
-        stop (Duration/seconds 2)
         player (doto
                  (MediaPlayer. media)
                  (.setStartTime start)
                  (.setStopTime stop))]
-    (.play player)))
+    player))
+
+(defn play [player]
+  (if player
+    (doto player .stop .play)))
