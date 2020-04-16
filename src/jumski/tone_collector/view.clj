@@ -16,8 +16,7 @@
 (defn list-view [{:keys [items selected-item]}]
   {:fx/type fx.ext.list-view/with-selection-props
    :props {:selection-mode :single
-           :selected-item selected-item
-           :on-selected-item-changed {:event :no-op}}
+           :selected-item selected-item}
    :desc {:fx/type :list-view
           :cell-factory (partial file-cell-factory selected-item)
           :items items}})
@@ -51,20 +50,20 @@
   (let [action-name (clojure.string/upper-case (name action))
         input (:input midi)
         mapped-note (action midi)
-        waiting-for-note? (:waiting-for-note midi)
-        this-action-waits? (= action waiting-for-note?)
+        mapping-note-for-action? (:mapping-note-for-action midi)
+        this-action-waits? (= action mapping-note-for-action?)
         text-color (cond
                     this-action-waits? :red
                     mapped-note :black
-                    (not waiting-for-note?) :red
+                    (not mapping-note-for-action?) :red
                     :else :grey)
         text (cond
                this-action-waits? (str "Press button for " action-name "!")
                (nil? mapped-note) (str "Map " action-name)
                :else (str "Remap " action-name " [" mapped-note "]"))
         on-action (if this-action-waits?
-                    {:event :cancel-waiting-for-note}
-                    {:event :start-waiting-for-note :action action})]
+                    {:event :cancel-mapping-note-for-action}
+                    {:event :start-mapping-note-for-action :action action})]
     (println "x" {:mapped-note mapped-note :this-action-waits? this-action-waits? :text-color text-color :text text})
     {:fx/type :button
      :on-action on-action

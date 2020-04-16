@@ -6,17 +6,17 @@
     [jumski.tone-collector.effects :as effects]))
 
 (def default-state
-  (atom {:info-dialog-confirmed false
+  {:info-dialog-confirmed false
          :from-dir nil
          :to-dir nil
          :files []
          :midi {:input nil
-                :waiting-for-note nil
+                :mapping-note-for-action nil
                 :play nil
                 :skip nil
-                :copy nil}}))
+                :copy nil}})
 
-(defonce *state default-state)
+(defonce *state (atom default-state))
 
 (def event-handler
   (-> events/handle
