@@ -50,21 +50,26 @@
   (let [action-name (clojure.string/upper-case (name action))
         input (:input midi)
         mapped-note (action midi)
-        mapping-note-for-action? (:mapping-note-for-action midi)
-        this-action-waits? (= action mapping-note-for-action?)
+
+        no-midi-input? (nil? input)
+        is-being-mapped? (= action (:mapping-note-for-action midi))
+        mapping-in-progress? (:mapping-note-for-action midi)
+        has-mapping? mapped-note
+        action-disabled? no-midi-input?
+
         text-color (cond
-                    this-action-waits? :red
-                    mapped-note :black
-                    (not mapping-note-for-action?) :red
-                    :else :grey)
+                     no-midi-input? :grey
+                     is-being-mapped? :red
+                     mapping-in-progress? :grey
+                     :else :black)
         text (cond
-               this-action-waits? (str "Press button for " action-name "!")
-               (nil? mapped-note) (str "Map " action-name)
+               is-being-mapped? (str "Press button for " action-name "!")
+               (not has-mapping?) (str "Map " action-name)
                :else (str "Remap " action-name " [" mapped-note "]"))
-        on-action (if this-action-waits?
-                    {:event :cancel-mapping-note-for-action}
-                    {:event :start-mapping-note-for-action :action action})]
-    (println "x" {:mapped-note mapped-note :this-action-waits? this-action-waits? :text-color text-color :text text})
+        on-action (cond
+                    action-disabled? {}
+                    is-being-mapped? {:event :cancel-mapping-note-for-action}
+                    :else {:event :start-mapping-note-for-action :action action})]
     {:fx/type :button
      :on-action on-action
      :style {:-fx-text-fill text-color}
