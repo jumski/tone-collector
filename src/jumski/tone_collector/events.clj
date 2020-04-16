@@ -7,8 +7,6 @@
     [javafx.event ActionEvent]
     [javafx.scene Node]))
 
-;;; handlers
-
 (defn maybe-load-files [state dir-key dir]
   (if (= :from-dir dir-key)
     (let [files (wav-files-in-dir (.getPath dir))]
@@ -73,9 +71,9 @@
                              (select-keys (:midi state) [:play :skip :copy]))
             action-to-run (get note-to-action note)]
         (if action-to-run
-          (let [x (handle {:event action-to-run :state state})]
-            (println x)
-            x)
+          (let [event (handle {:event action-to-run :state state})]
+            (println event)
+            event)
           {})))))
 
 (defmethod handle :cancel-waiting-for-note [{:keys [state]}]
@@ -83,6 +81,3 @@
 
 (defmethod handle :start-waiting-for-note [{:keys [state action]}]
   {:state (assoc-in state [:midi :waiting-for-note] action)})
-
-;;; rapid feedback for :Require
-; (jumski.tone-collector.main-gui/renderer)
