@@ -57,10 +57,16 @@
 
 (defmethod handle :midi-note-on [{:keys [state note]}]
   (let [midi (:midi state)
-        mapping-note-for-action (:mapping-note-for-action midi)]
+        mapping-note-for-action (:mapping-note-for-action midi)
+        new-state (assoc-in state [:midi :last-note] note)]
     (if mapping-note-for-action
-      {:dispatch {:event :map-note-to-action :note note :action mapping-note-for-action}}
-      {:dispatch {:event :trigger-action-for-note :note note}})))
+      {:dispatch {:event :map-note-to-action
+                  :note note
+                  :action mapping-note-for-action}
+       :state new-state}
+      {:dispatch {:event :trigger-action-for-note
+                  :note note}
+       :state new-state})))
 
 (defmethod handle :map-note-to-action [{:keys [state note action]}]
   {:state (-> state
