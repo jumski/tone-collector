@@ -57,18 +57,22 @@
 
 (defmethod handle :midi-note-on [{:keys [state note]}]
   (let [midi (:midi state)
-        action-that-waits (:mapping-note-for-action midi)]
-    (if action-that-waits
-      {:state (-> state
-                  (assoc-in [:midi :last-note] note)
-                  (assoc-in [:midi action-that-waits] note)
-                  (assoc-in [:midi :mapping-note-for-action] nil))}
-      (let [note-to-action (clojure.set/map-invert
-                             (select-keys (:midi state) [:play :skip :copy]))
-            action-to-run (get note-to-action note)]
-        (if action-to-run
-          (handle {:event action-to-run :state state})
-          {})))))
+        mapping-note-for-action (:mapping-note-for-action midi)]
+    (if mapping-note-for-action
+      {:dispatch {:event :map-note-to-action :note note :action mapping-note-for-action}}
+      {:dispatch {:event :trigger-action-for-note :note note}})))
+
+(defmethod handle :map-note-to-action [{:keys [state note action]}]
+  {:state (-> state
+              (assoc-in [:midi action] note)
+              (assoc-in [:midi :mapping-note-for-action] nil))})
+
+(defmethod handle :trigger-action-for-note [{:keys [state note]}]
+  (let [note->action (clojure.set/map-invert
+                       (select-keys (:midi state) [:play :skip :copy]))
+        action-to-trigger (note->action note)]
+    (if action-to-trigger
+      {:dispatch {:event action-to-trigger}})))
 
 (defmethod handle :cancel-mapping-note-for-action [{:keys [state]}]
   {:state (assoc-in state [:midi :mapping-note-for-action] nil)})
