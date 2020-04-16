@@ -21,7 +21,10 @@
   {:state (assoc state :info-dialog-confirmed true)})
 
 (defmethod handle :play [{:keys [state]}]
-  {:play (first (:files state))})
+  (let [{:keys [midi]} state]
+    (if (:mapping-note-for-action state)
+      {}
+      {:play (first (:files state))})))
 
 (defmethod handle :skip [{:keys [state]}]
   (let [new-state (update state :files rest)
@@ -64,9 +67,7 @@
                              (select-keys (:midi state) [:play :skip :copy]))
             action-to-run (get note-to-action note)]
         (if action-to-run
-          (let [event (handle {:event action-to-run :state state})]
-            (println event)
-            event)
+          (handle {:event action-to-run :state state})
           {})))))
 
 (defmethod handle :cancel-mapping-note-for-action [{:keys [state]}]
