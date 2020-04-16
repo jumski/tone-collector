@@ -5,7 +5,8 @@
     [jumski.tone-collector.events :as events]
     [jumski.tone-collector.effects :as effects])
   (:import
-    [javafx.application Platform]))
+    [javafx.application Platform])
+  (:gen-class))
 
 (def default-state
   {:info-dialog-confirmed false
