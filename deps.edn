@@ -3,4 +3,9 @@
   cljfx {:mvn/version "1.6.7"}
   overtone/midi-clj {:mvn/version "0.5.0"}}
  :aliases
- {:cambada {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.2"}}}}}
+ {:uberjar {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.2"}}
+            :main-opts ["-m" "cambada.uberjar"
+                        "-m" "jumski.tone-collector.core"]}
+  :native-image {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.2"}}
+                 :main-opts ["-m" "cambada.native-image"
+                             "-m" "jumski.tone-collector.core"]}}}
