@@ -2,4 +2,6 @@
  {org.clojure/clojure {:mvn/version "1.10.0"}
   cljfx {:mvn/version "1.6.7"}
   overtone/midi-clj {:mvn/version "0.5.0"}}
- :paths ["classes/", "src/"]}
+ :paths ["classes/" "src/"]
+ :aliases
+ {:cambada {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.2"}}}}}
