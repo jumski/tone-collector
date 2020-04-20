@@ -1,0 +1,2 @@
+#!/bin/bash
+clj -R:cambada -m cambada.uberjar --main jumski/tone_collector/core
